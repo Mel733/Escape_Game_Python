@@ -23,7 +23,7 @@ class Oxygene:  # gère le niveau d'oxygène du joueur
         self._niveau = max (0, self._niveau - cout)  # on retire le coût, jamais sous 0
 
     def recharger(self, quantite):  
-        self._niveau = min (self._maximum, self._niveau + quantite)  # À CORRIGER : min à la place de max (limite à 80)
+        self._niveau = min (self._maximum, self._niveau + quantite)  
 
 
 
@@ -257,7 +257,7 @@ class Joueur:
         self._oxygene.retirer(cout)
     
     def recharger_oxygene(self, quantite):
-        self._oxygene.recharger(quantite)  # À CORRIGER si tu renommes rechager
+        self._oxygene.recharger(quantite)  
     
     def voir_inventaire(self):
        nom_objet = []  # liste des noms
