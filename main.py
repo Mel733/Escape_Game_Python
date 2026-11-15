@@ -51,7 +51,7 @@ def main():
             print(erreur)
 
     if game_manager.a_gagner:
-        print (f"Félicitation vous avez reussi a sortir avec {game_manager.niveau_final_oxygene1} % d'oxygene")
+        print (f"Félicitation vous avez reussi a sortir avec {game_manager.niveau_final_oxygene} % d'oxygene")
     else:
         print("Vous êtes mort vous avez échoué")
 
