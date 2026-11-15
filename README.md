@@ -16,7 +16,7 @@ python main.py
 
 
 ## Mon avis
-Projet complet et intéressant mais un peu complexe.
+Projet complet et intéressant mais un peu complexe. Le readMe a été générer par IA par manque de temps mais j'ai vérifier si tout était correcte
 
 # Mission ORION-7 : escape game spatial en Python
 
