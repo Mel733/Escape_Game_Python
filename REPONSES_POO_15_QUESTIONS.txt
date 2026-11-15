@@ -1,6 +1,6 @@
 MISSION ORION-7 - QUESTIONNAIRE DE CONCEPTION POO
-NOM :
-PRÉNOM :
+NOM : Robert
+PRÉNOM : Mélodie
 LIEN DU DÉPÔT GITHUB :
 
 Consigne : répondez aux 15 questions dans CE fichier texte, après avoir réalisé

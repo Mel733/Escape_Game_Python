@@ -74,9 +74,10 @@ class Cable(Objets):
     def utiliser(self, joueur, salle) -> bool:
         if  salle.nom !="Machines":
             return False
-        #sinon installer dans les machines
-        #l'objet disparait de l'inventaire apres
-        #return true
+        salle.installer(self)
+        joueur.retirer_objet(self)
+        return True
+       
 
 class Fusible(Objets):
     def __init__(self):
@@ -85,11 +86,57 @@ class Fusible(Objets):
     def utiliser(self, joueur, salle) -> bool:
         if salle.nom !="Machines":
             return False
-        #sinon installer dans les machines
-        #l'objet disparait de l'inventaire apres
-        #return true
+        salle.installer(self)
+        joueur.retirer_objet(self)
+        return True
+        
 
     
+
+
+class Enigme:
+    def __init__(self):
+        self.resolue = False
+
+    def verifier(self, joueur, saisie=None) -> bool:
+        raise NotImplementedError("Rien ne se passe")
+
+class EnigmeObjet(Enigme):
+    def __init__(self, objet_requis:str):
+        super().__init__()
+        self._objet_requis = objet_requis
+
+    @property
+    def objet_requis(self):
+        return self._objet_requis
+
+    def verifier(self, joueur, saisie=None) -> bool:
+        if joueur.possede(self._objet_requis):
+            self.resolue = True
+        return False
+
+class EnigmeCode(Enigme):
+    def __init__(self, code: str):
+        super().__init__()
+        self._code = code
+
+    
+    def verifier(self, joueur, saisie=None) -> bool:
+        if saisie is None:
+                return False
+        
+        saisie_propre = saisie.strip()
+        
+        if saisie_propre.isdigit() == False:
+           return False
+
+        if saisie_propre == self._code:
+            self.resolue = True
+            return True
+        return False
+
+
+
 class Salle:
     def __init__(self,nom : str):
         self._passages : list[Passage] =[]
@@ -172,15 +219,18 @@ class Machines(Salle):
         if self._enigme.verifier(joueur, saisie):
             self._reacteur_actif = True
             for passage in self._passages:
-             if passage.autre_salle(self).nom == "Commande":
-                passage.deverrouiller()
-             return True
+               if passage.autre_salle(self).nom == "Commande":
+                  passage.deverrouiller()
+            return True
         return False
             
 class Laboratoire(Salle):
     def __init__(self, code: str):
         super().__init__("Laboratoire")
-        self._code=code
+        self._code= code
+
+    def lire_journal(self):
+        return self._code
 
 class Joueur:
     def __init__(self, oxygene: Oxygene, salle_actuelle : Salle):
@@ -205,7 +255,12 @@ class Joueur:
     def est_vivant(self):
         return self._oxygene>0
 
-
+    def retirer_oxygene(self, cout):
+        self._oxygene.retirer(cout)
+    
+    def recharger_oxygene(self, quantite):
+        self._oxygene.rechager(quantite)
+    
     def voir_inventaire(self):
        if not self._inventaire:
            return "Inventaire vide"
@@ -235,7 +290,7 @@ class Joueur:
     def changer_salle(self, nouvelle_salle:Salle):
         self._salle_actuelle = nouvelle_salle
 
-
+    
 
 class Passage:
     def __init__(self,salle_a:Salle, salle_b:Salle, verouiller: bool, condition:bool):
@@ -266,50 +321,177 @@ class Passage:
             return None
 
 
-
-class Enigme:
+class GameManager:
     def __init__(self):
-        self.resolue = False
+        self.preparer_partie()
+        self._joueur = self.joueur
 
-    def verifier(self, joueur, saisie=None) -> bool:
-        raise NotImplementedError("Rien ne se passe")
+    def preparer_partie(self):
+       code ="8259"
+       self.sas = Salle("Sas")
+       self.reserve = Salle("Réserve")
+       self.labo =  Laboratoire(code)
+       self.machine = Machines(EnigmeCode(code))
+       self.commande = Salle("Commande")
 
-class EnigmeObjet(Enigme):
-    def __init__(self, objet_requis:str):
-        super().__init__()
-        self._objet_requis = objet_requis
+       self._salles = {"Sas":self.sas, 
+                      "Réserve":self.reserve,
+                      "Laboratoire":self.labo,
+                      "Machines":self.machine,
+                      "Commande":self.commande}
+       
+       self._couts ={ "déplacer": 6,
+                     "observer": 1,
+                     "lire journal":1,
+                     "ramasser":2,
+                     "utiliser" : 2,
+                     "tenter code": 3,
+                     "évacuer" :3,
+                     "attendre":5
 
-    @property
-    def objet_requis(self):
-        return self._objet_requis
 
-    def verifier(self, joueur, saisie=None) -> bool:
-        if joueur.possede(self._objet_requis):
-            self.resolue = True
-        return False
+       }
+       
+       self.reserve.ajouter_objet(Badge())
+       self.reserve.ajouter_objet(Cable())
+       self.labo.ajouter_objet(Bombonne())
+       self.labo.ajouter_objet(Fusible())
 
-class EnigmeCode(Enigme):
-    def __init__(self, code: str):
-        super().__init__()
-        self._code = code
+       self.joueur = Joueur(Oxygene(48, 80), Salle(self.sas))
+
+       passage_sas_reserve = Passage(self.sas, self.reserve, verouiller=False)
+       self.sas.ajouter_passage(passage_sas_reserve)
+       self.reserve.ajouter_passage(passage_sas_reserve)
+
+       passage_sas_labo = Passage(self.sas,self.labo,  verouiller=False)
+       self.sas.ajouter_passage(passage_sas_labo)
+       self.labo.ajouter_passage(passage_sas_labo)
+
+       passage_labo_machines = Passage(self.labo, self.machine, verouiller=True)
+       self.labo.ajouter_passage(passage_labo_machines)
+       self.machine.ajouter_passage(passage_labo_machines)
+
+       passage_machine_commande=Passage(self.machine, self.commande, verouiller=True)
+       self.machine.ajouter_passage(passage_machine_commande)
+       self.commande.ajouter_passage(passage_machine_commande)
+
+       self._joueur = Joueur(Oxygene(48, 80), Salle(self.sas))
+
+       self._etat = "en cours"
+
+
+
+    def _payer(self, cout):
+        self._joueur.retirer_oxygene(cout)
+        if not self._joueur.est_vivant():
+            self._etat = "defaite"
+            return False
+        return True
+
+
+        
+    def deplacer(self, autre_salle):
+        destination = self._salles.get(autre_salle)
+        passage = self.joueur._salle_actuelle.passage_vers(destination)
+        if destination is None:
+            return "Cette salle n'existe pas."
+        if passage is None:
+            return f"Passage entre {self._joueur.salle_actuelle.nom} vers {destination.nom} n'existe pas"
+        if not passage.est_ouvert():
+            return f"Passage entre {self._joueur.salle_actuelle.nom} vers {destination.nom} fermé"
+        if not self._payer(self._couts["deplacer"]):
+            return "tu est mort"
+        self.joueur.changer_salle(destination)
+        return f"Tu es maintenant dans {destination.nom}"
+
+
+    def observer(self):
+        self._payer(self._couts["observer"])
+        return self._joueur._salle_actuelle.decrire()
+
+    def lire_journal(self):
+        salle = self._joueur.salle_actuelle
+        if salle.nom == "Laboratoire":
+            self._payer(self._couts["lire journal"])
+            return self.labo.lire_journal()
+        return "Pas possible"
+        
+
+    def ramasser(self, nom_objet):
+        self._joueur.trouver_objet(nom_objet)
+        if not nom_objet:
+            return f"Objet absent : {nom_objet}"
+        if not self._payer(self._couts["ramasser"]):
+            return"Plus d'oxygene"
+        self._payer(self._couts["ramasser"])
+        self._joueur.salle_actuelle.retirer_objet(nom_objet)
+        self._joueur._inventaire.append(nom_objet)
+
+
+
+    def tenter_code(self, saisie):
+        salle = self._joueur.salle_actuelle
+        if salle.nom != "Machines":
+            return "Impossible"
+        if not salle.cable_installe or not salle.fusible_installe:
+            return "Objet manquant"
+        if not self._payer(self._couts["tenter code"]):
+            return "Plus d'oxygene"
+        if salle.tenter_code(saisie, self._joueur):
+            self._payer(self._couts["tenter code"])
+            return "Code correct, le réacteur démarre, la porte vers la salle de commande s'ouvre"
+        return "Code faux"
+
+    def evacuer(self):
+        salle = self._joueur.salle_actuelle
+        if salle.nom != "Commande":
+            return "Action possible seulement dans Commandes"
+        if salle.reacteur_actif:
+            self._payer(self._couts["evacuer"])
+            self._etat = "victoire"
+
+
+    def utiliser(self, nom_objet):
+        if self.est_terminee():
+            return "Plus d'oxygene"
+
+        objet = self._joueur.trouver_objet(nom_objet)
+        if objet is None :
+            return "Refusé, aucun oxygene a été débité"
+
+        salle = self._joueur.salle_actuelle
+        if not self._payer(self._couts["utiliser"]):
+            return "Tu a perdu, plus d'oxygene"
+
+        resultat = objet.utiliser(self._joueur, salle)
+        if resultat is True:
+            return f"Tu a utilisé : {objet.nom}"
+        return f"Impossible d'utiliser : {objet.nom}"
+
+        
+
+
+
+
+
+    def attendre(self):
+        return self._payer(self._couts["attendre"])
+
+    def aide(self):
+        return "Aide : Le but de cet escape game est de s'enfuire de la base, faite attention a vos action car une fois l'oxygene a 0 c'est perdu"
+
+    def etat(self):
+        return f"Voici votre état : Salle: {self._joueur.salle_actuelle} | Oxygène :{self._joueur.oxygene}"
+
+    def voir_inventaire(self):
+        return f"Votre inventaire: {self._joueur.inventaire}"
+
+
+    def est_terminee(self):
+        if self._etat != "en cours":
+            return True 
+
+        
 
     
-    def verifier(self, joueur, saisie=None) -> bool:
-        if saisie is None:
-                return False
         
-        saisie_propre = saisie.strip()
-        
-        if saisie_propre.isdigit() == False:
-           return False
-
-        if saisie_propre == self._code:
-            self.resolue = True
-            return True
-        return False
-
-        
-
-
-
-       
