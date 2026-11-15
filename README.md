@@ -41,7 +41,7 @@ Aucun module externe n'est nécessaire.
 ## Les classes
 
 - **Oxygene** : garde le niveau d'oxygène (départ 48, maximum 80, jamais négatif). Méthodes : `retirer()`, `recharger()`, property `niveau`.
-- **Objet** (classe mère) avec **Badge**, **Cable**, **Fusible**, **Bombonne** : chaque enfant redéfinit `utiliser(joueur, salle)` avec son propre effet.
+- **Objet** (classe mère) avec **Badge**, **Câble**, **Fusible**, **Bombonne** : chaque enfant redéfinit `utiliser(joueur, salle)` avec son propre effet.
 - **Enigme** (classe mère) avec **EnigmeObjet** (le joueur possède-t-il l'objet ?) et **EnigmeCode** (le code est-il bon ?) : chaque enfant redéfinit `verifier()`.
 - **Salle** : liste d'objets et de passages. Méthodes : `ajouter_objet()`, `retirer_objet()`, `trouver_objet()`, `decrire()`, `ajouter_passage()`, `passage_vers()`.
   - **Laboratoire** (hérite de Salle) : `lire_journal()`, qui donne le code du réacteur.
