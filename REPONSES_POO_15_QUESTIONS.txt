@@ -1,7 +1,7 @@
 MISSION ORION-7 - QUESTIONNAIRE DE CONCEPTION POO
 NOM : Robert
 PRÉNOM : Mélodie
-LIEN DU DÉPÔT GITHUB :
+LIEN DU DÉPÔT GITHUB : https://github.com/Mel733/Escape_Game_Python
 
 Consigne : répondez aux 15 questions dans CE fichier texte, après avoir réalisé
 votre programme. Pour chaque réponse, citez vos classes et donnez au moins
@@ -9,62 +9,103 @@ un exemple concret tiré de votre code. N'écrivez pas seulement des définition
 
 QUESTION 01 - Quelles classes avez-vous créées et quelle responsabilité unique
 ou principale avez-vous attribuée à chacune ? Pourquoi ce découpage ?
-RÉPONSE :
+RÉPONSE : J'ai créé 15 classes au total : La classe Oxygene qui gère le niveau d'oxygène en imposant un maximum et qui contrôle aussi son niveau qui descend lors des actions tout en faisant attention qu'il ne descende pas en dessous de 0.
+Ensuite il y a la classe mère Objet qui va être le moule de ses 4 classes enfants (Cable, Badge, Fusible et Bombonne) elles ont toutes une méthode pour leur utilisation qui est différente selon l'objet. Ces classes enfants seront utilisées et ajoutées dans les salles
+Après il y a la classe mère Enigme avec ses deux enfants EnigmeCode pour le code du réacteur et l'EnigmeObjet pour les énigmes avec un objet requis avec le badge par exemple. Toutes les deux héritent de Enigme et ont leur méthode verifier pour renvoyer si l'énigme est résolue ou non.
+Juste après la classe Salle avec deux classes enfants Laboratoire et Machines, seulement ces deux ont été créées car elles ont une particularité, les autres sont de simples instances. La classe Salle peut ajouter, retirer des objets tout en pouvant la décrire et ajouter des passages entre deux de ses enfants. Sa classe enfant Laboratoire a sa propre méthode pour lire le journal tandis que Machines lui a sa méthode pour rentrer le code et installer le fusible et câble.
+Ensuite la classe Joueur avec ses statistiques, cette classe ajoute et retire des objets dans son inventaire, trouve des objets, regarde si le joueur est vivant et appelle des méthodes pour gérer son niveau d'oxygène.
+En avant-dernier la classe Passage qui sera le passage entre deux salles, si tel ou tel passage est verrouillé ou non et si le joueur peut passer et quelle salle est à l'autre bout
+Pour finir la classe GameManager qui prépare la partie en installant les objets dans leur salle, créer le code, verrouiller tel et tel passage, le niveau d'oxygène du joueur, les salles, les actions avec leurs coûts et l'état de la partie.
+
+J'ai choisi ce découpage pour vraiment séparer tous les piliers du jeu pour rester organisé. Par exemple la classe Passage gère les passages et l'accessibilité entre deux salles, c'est elle qui dit qui est déverrouillé ou non. Les règles sont dans les classes pas dans la classe GameManager comme pour Badge.utiliser() ou EnigmeCode.verifier(). Le GameManager appelle seulement les méthodes pour déléguée.
+
 
 QUESTION 02 - Quelle classe pilote le déroulement global de la partie ?
 Quelles méthodes avez-vous prévues pour cela et que délèguent-elles ?
-RÉPONSE :
+RÉPONSE : C'est la classe GameManager qui gère le déroulement de la partie, elle a 14 méthodes : la première c'est preparer_partie() qui va préparer la partie avec les salles et les objets qu'elles contiennent, les passages en leur disant lesquels sont verrouillés et déverrouillés, elle prépare aussi des dictionnaires avec les actions et leurs coûts mais aussi le joueur avec son niveau actuel et max d'oxygène et la salle où il apparaît.
+Il y a après la méthode déplacer qui va déplacer le joueur dans la salle qu'il désire tant que le chemin existe et qu'il est libre.
+Ensuite la méthode payer qui elle retire l'oxygène selon l'action et qui vérifie si le joueur est vivant. La troisième est la méthode décrire() qui renverra un texte pour décrire la salle actuelle. La 4ème c'est lire_journal() pour connaître le code seulement dans le labo. La 5ème c'est ramasser l'objet selon la salle et s'il existe. La 6ème c'est de tenter le code seulement dans les machines quand le fusible et câble sont installés.
+La 7ème c'est évacuer qui est dispo que dans commande et qui renverra selon le scénario une victoire. La 8ème c'est utiliser un objet s'il existe ou n'est pas déjà utilisé ou absent. La 9ème c'est attendre, rien de spécial. La 10ème c'est aide avec un texte explicatif. La 11ème c'est l'état du joueur avec son niveau d'oxygène et la salle où il se trouve.
+La 12ème méthode c'est pour afficher l'inventaire du joueur et la dernière c'est pour déterminer quand une partie est terminée.
+
+Toutes les méthodes des actions du joueur sont appelées dans main.py et ces mêmes méthodes dans le GameManager appellent elles aussi des méthodes provenant des autres classes. Un message s'affiche dans le terminal selon chaque scénario de chaque méthode de GameManager.
+Par exemple deplacer() délègue à Salle.passage_vers(), Passage.est_ouvert() et Joueur.changer_salle().
+Cela vaut aussi pour d'autres méthodes qui délèguent en donnant du travail aux autres méthodes.
 
 QUESTION 03 - Où placez-vous l'oxygène du joueur ? Pourquoi ce choix plutôt
 qu'une variable globale ou une propriété accessible de partout ?
-RÉPONSE :
+RÉPONSE : J'ai créé une classe Oxygene qui garde et surveille le niveau d'oxygène du joueur. Dans la classe Joueur certaines méthodes en rapport avec l'oxygène délèguent et passent la demande à la classe Oxygene.
+Le joueur possède un attribut privé pour l'oxygène qui est un objet Oxygene. J'ai choisi de faire comme cela car une variable globale pourrait être modifiée par n'importe quel bout de code.
+De plus on pourrait mettre la valeur en négatif ou supérieur au maximum sans que personne ne vérifie. Et pour finir la property pour le niveau sert seulement à lire et est protégée des modifications.
 
 QUESTION 04 - Quelles propriétés sont publiques, protégées ou privées dans
 vos classes ? Donnez au moins trois exemples et justifiez chaque niveau d'accès.
-RÉPONSE :
+RÉPONSE : Comme exemple il y a le nom des instances d'objets qui sont publiques car c'est juste pour identifier un objet.
+Ensuite il y a un attribut _objets qui renvoie une liste d'objets, elle est protected car elle ne doit pas être modifiée, seulement par des méthodes, la property sert juste à la lire.
+La dernière est le _code dans Laboratoire, pour que personne ne puisse le lire ni le modifier depuis l'extérieur.
+Je n'ai pas utilisé de private car le protected servait à protéger mes attributs.
 
 QUESTION 05 - Quelles méthodes avez-vous créées pour dépenser et recharger
 l'oxygène ? Pourquoi ces méthodes plutôt que l'accès direct à une propriété ?
 Expliquez les validations (coûts, recharge, valeur minimale/maximale).
-RÉPONSE :
+RÉPONSE : Il y a la méthode retirer dans Oxygene qui renvoie le niveau actuel -coût et la méthode recharger qui elle ajoute la quantité qui est de 30 au niveau actuel.
+Il y a aussi les méthodes du Joueur, retirer_oxygene et recharger_oxygene, elles délèguent, le GameManager passe par elles.
+L'accès direct n'applique aucune règle, alors les méthodes protègent les limites.
+Le minimum est de 0 et le max est de 80. Les coûts sont dans le dictionnaire dans le GameManager et c'est la méthode _payer() qui appelle Joueur.retirer_oxygene(), puis vérifie est_vivant()
+On retire le coût d'abord, puis on regarde si le joueur est en vie, puis on applique l'effet. Pour la bonbonne, la recharge se fait seulement si le joueur survit
 
 QUESTION 06 - Quelle classe est responsable de l'inventaire et quelles méthodes
 permettent de le modifier ? Comment empêchez-vous les doubles usages ?
-RÉPONSE :
+RÉPONSE : C'est la classe Joueur, un de ses attributs est une liste d'instances d'objets, dans cette même classe on peut ajouter et retirer des objets notamment quand un objet est utilisé.
+Le GameManager a sa méthode pour afficher l'inventaire en déléguant à la méthode voir_inventaire du joueur. On empêche les doubles usages en supprimant des objets après les avoir utilisés.
+Pour le badge lui reste encore disponible mais il ne déverrouille plus rien donc vous perdez de l'oxygène pour rien.
+
 
 QUESTION 07 - Comment représentez-vous les salles et leurs connexions ?
 Pourquoi avoir choisi cette structure (objets, listes, dictionnaires ou autre) ?
-RÉPONSE :
+RÉPONSE : J'ai créé des instances classiques pour les salles comme Réserve, Sas ou Commande car elles n'ont rien de spécial. Seules les salles Laboratoire et Machines sont des classes enfants de Salle car elles ont des méthodes propres à elles.
+Ce qui concerne leurs relations, j'ai créé une classe Passage qui est un seul objet partagé, ajouté aux deux salles avec ajouter_passage et ses méthodes déverrouiller et vérifier si un passage est libre et qui vérifie où un passage mène. C'est dans le GameManager qu'on va créer ces passages entre les salles, et qu'on leur donnera un paramètre pour leur accessibilité (verrouillé ou non).
+J'ai choisi cette structure car un passage pour deux salles, les règles sont dans Passage. Facile pour ajouter des passages et d'autres salles, facile à tester.
+Chaque salle a une liste d'objets et de passages.
 
 QUESTION 08 - Quelle classe décide qu'une porte peut être franchie ?
 Décrivez la collaboration entre le joueur, la salle et cette classe.
-RÉPONSE :
+RÉPONSE : C'est la classe Passage qui en décide, le joueur ne fait que changer de salle, la salle elle fournit le passage et c'est le GameManager qui enchaîne les étapes.
+Si les règles étaient dans le GameManager il faudrait modifier la fonction déplacer à chaque fois.
 
 QUESTION 09 - Comment représentez-vous les objets et leurs effets ? Un objet
 sait-il s'utiliser lui-même ou sa logique est-elle déléguée ? Pourquoi ?
-RÉPONSE :
+RÉPONSE : Je représente les objets sous forme de classes enfants d'Objet, chacun d'entre eux s'utilise différemment selon leur usage.
+Un objet peut s'utiliser lui-même, le GameManager appelle objet.utiliser pour connaître les effets de l'objet utilisé.
 
 QUESTION 10 - Avez-vous utilisé l'héritage ? Présentez la relation entre
 classe mère et classes filles et expliquez le partage de comportement obtenu.
-RÉPONSE :
+RÉPONSE : Oui par exemple avec la classe Objet et ses classes enfants qui héritent de son attribut nom avec le super() et de leur méthode utiliser(), chaque contenu de la méthode est différent selon l'objet.
+J'ai aussi utilisé l'héritage avec Salle -> Machines et Laboratoire et avec Enigme -> EnigmeCode et EnigmeObjet
+
 
 QUESTION 11 - Où apparaît le polymorphisme ? Donnez un exemple précis de
 même opération ayant un comportement différent suivant le type d'énigme.
-RÉPONSE :
+RÉPONSE : Le polymorphisme apparaît dans les classes Objet ainsi que les Enigmes.
+Elles redéfinissent les méthodes de leur classe mère comme utiliser() pour les objets et verifier() pour les énigmes.
 
 QUESTION 12 - Que se passe-t-il, classe par classe, lorsqu'un joueur utilise
 le badge pour ouvrir la porte de maintenance ? Décrivez les interactions.
-RÉPONSE :
+RÉPONSE : Le joueur tape «  badge » dans utiliser un objet dans  main.py, et le GameManager.utiliser() vérifie que le joueur a le badge,
+puis fait payer 2 d'oxygène avec _payer(). Ensuite Badge.utiliser() trouve le passage vers les machines, et Passage.essayer_deverouiller() demande à EnigmeObjet.verifier() si le joueur possède le badge, puis deverouiller() et ouvre la porte.
 
 QUESTION 13 - Que se passe-t-il, classe par classe, lorsque le joueur tente
 de redémarrer le réacteur ? Précisez les vérifications et leurs responsables.
-RÉPONSE :
+RÉPONSE : Le joueur tape «code » dans tenter le code  dans main.py, et GameManager.tenter_code() vérifie qu'il est dans les machines, puis que le câble et le fusible sont installés (properties de Machines),
+et fait payer 3 d'oxygène avec _payer(). Ensuite Machines.tenter_code() demande à EnigmeCode.verifier() si le code est bon, et si oui, le réacteur démarre (_reacteur_actif) et la porte vers la Commande est déverrouillée avec Passage.deverouiller().
 
 QUESTION 14 - Comment séparez-vous l'affichage et les saisies console des
 règles métier ? Quel intérêt cela présente-t-il pour les tests et l'évolution ?
-RÉPONSE :
+RÉPONSE :  L’affichage et les saisies sont seulement dans main.py, avec input() et print(). Les classes comme GameManager, Passage ou Joueur ne font jamais de print : leurs méthodes renvoient un texte ou True/False, et main.py affiche le résultat.
 
 QUESTION 15 - Si vous deviez ajouter une sixième salle, un nouvel objet et
 un troisième type d'énigme, quelles classes faudrait-il modifier ? Pourquoi ?
 Qu'amélioreriez-vous dans votre architecture actuelle ?
-RÉPONSE :
+RÉPONSE : J'aurais, je pense, ajouté une salle infirmerie avec un objet clé pour ouvrir vers une salle observatoire qui donnera un objet tournevis pour retirer des vis sur un vaisseau (une fin alternative)
+Il faudrait modifier les classes GameManager, Salle, Objet et Enigmes
+J'avais pensé à ajouter un random pour le code.

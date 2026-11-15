@@ -1,4 +1,4 @@
-"""Espace prévu pour organiser vos classes et modules Python."""
+
 class Oxygene:
     def __init__(self,niveau : int, maximum : int):
         if maximum >80:
@@ -46,10 +46,11 @@ class Bombonne(Objets):
     def utiliser(self, joueur, salle):
         if self._utilisee :
             return False
-        else :
-           joueur.recharger(30)
-           self._utilisee = True
-           return True
+        
+        joueur.recharger_oxygene(30)
+        self._utilisee = True
+        joueur.retirer_objet(self)
+        return True
 
 class Badge(Objets):
      def __init__(self):
@@ -57,19 +58,18 @@ class Badge(Objets):
 
 
      def utiliser(self, joueur, salle) -> bool:
-         if not salle.nom !="Laboratoire":
+         if not salle.nom =="Laboratoire":
              return False
          for passage in salle.passages:
-          if passage.autre_salle(salle).nom == "Machines":
-                 passage.deverrouiller()
-                 return True
-          return False
+            if passage.autre_salle(salle).nom == "Machines":
+                 return passage.essayer_deverouiller(joueur)
+         return False
              
   
 
 class Cable(Objets):
     def __init__(self):
-        super().__init__("Cable")
+        super().__init__("Câble")
 
     def utiliser(self, joueur, salle) -> bool:
         if  salle.nom !="Machines":
@@ -109,10 +109,11 @@ class EnigmeObjet(Enigme):
     @property
     def objet_requis(self):
         return self._objet_requis
-
+    
     def verifier(self, joueur, saisie=None) -> bool:
         if joueur.possede(self._objet_requis):
             self.resolue = True
+            return True
         return False
 
 class EnigmeCode(Enigme):
@@ -153,10 +154,10 @@ class Salle:
 
 
     def ajouter_objet(self, objet):
-        self._objet.append(objet)
+        self._objets.append(objet)
 
     def retirer_objet(self, objet):
-        self._objets.remove(objet)
+       self._objets.remove(objet)
 
     def trouver_objet(self, nom: str):
         nom = nom.lower().strip()
@@ -180,8 +181,8 @@ class Salle:
     def passage_vers(self,salle):
         for passage in self._passages:
             if passage.autre_salle(self) == salle:
-             return passage
-            return None
+              return passage
+        return None
 
 class Machines(Salle):
     def __init__(self,enigme:EnigmeCode):
@@ -205,7 +206,7 @@ class Machines(Salle):
         return self._reacteur_actif
 
     def installer(self,objet):
-        if objet.nom =="Cable":
+        if objet.nom =="Câble":
             self._cable_installe = True
             return True
         elif objet.nom =="Fusible":
@@ -220,7 +221,7 @@ class Machines(Salle):
             self._reacteur_actif = True
             for passage in self._passages:
                if passage.autre_salle(self).nom == "Commande":
-                  passage.deverrouiller()
+                  passage.deverouiller()
             return True
         return False
             
@@ -253,7 +254,7 @@ class Joueur:
 
 
     def est_vivant(self):
-        return self._oxygene>0
+        return self._oxygene.niveau>0
 
     def retirer_oxygene(self, cout):
         self._oxygene.retirer(cout)
@@ -262,10 +263,15 @@ class Joueur:
         self._oxygene.rechager(quantite)
     
     def voir_inventaire(self):
+       nom_objet = []
        if not self._inventaire:
            return "Inventaire vide"
-       return f"Inventaire : {self._inventaire}"
+       for objet in self._inventaire:
+             nom_objet.append(objet.nom)
+       texte = ", ".join(nom_objet)
+       return f"Inventaire : {texte}"
 
+    
     def ajouter_objet(self, objet):
         self._inventaire.append(objet)
 
@@ -293,24 +299,32 @@ class Joueur:
     
 
 class Passage:
-    def __init__(self,salle_a:Salle, salle_b:Salle, verouiller: bool, condition:bool):
+    def __init__(self,salle_a:Salle, salle_b:Salle, verouiller: bool, enigme = None):
         self.salle_a = salle_a
         self.salle_b =salle_b
         self._verouiller = verouiller
-        self.condition = condition
-
+        self._enigme = enigme
+        
     @property
     def verouiller(self):
         return self._verouiller
 
-    def est_ouvert(self):
-        if not self._verouiller == False:
+
+    def essayer_deverouiller(self, joueur):
+        if self._enigme is None:
+            return False
+        if self._enigme.verifier(joueur):
+            self.deverouiller()
             return True
         return False
 
 
+    def est_ouvert(self):
+        return not self._verouiller
+
+
     def deverouiller(self):
-        self._verouiller = True
+        self._verouiller = False
 
     def autre_salle(self,salle):
         if salle == self.salle_a:
@@ -357,17 +371,17 @@ class GameManager:
        self.labo.ajouter_objet(Bombonne())
        self.labo.ajouter_objet(Fusible())
 
-       self.joueur = Joueur(Oxygene(48, 80), Salle(self.sas))
+       self.joueur = Joueur(Oxygene(48, 80), self.sas)
 
        passage_sas_reserve = Passage(self.sas, self.reserve, verouiller=False)
        self.sas.ajouter_passage(passage_sas_reserve)
        self.reserve.ajouter_passage(passage_sas_reserve)
 
-       passage_sas_labo = Passage(self.sas,self.labo,  verouiller=False)
+       passage_sas_labo = Passage(self.sas, self.labo,  verouiller=False)
        self.sas.ajouter_passage(passage_sas_labo)
        self.labo.ajouter_passage(passage_sas_labo)
 
-       passage_labo_machines = Passage(self.labo, self.machine, verouiller=True)
+       passage_labo_machines = Passage(self.labo, self.machine, verouiller=True, enigme=EnigmeObjet("Badge"))
        self.labo.ajouter_passage(passage_labo_machines)
        self.machine.ajouter_passage(passage_labo_machines)
 
@@ -379,7 +393,20 @@ class GameManager:
 
        self._etat = "en cours"
 
+    @property
+    def etat(self):
+      return self._etat
 
+    @property
+    def a_gagner(self):
+       if self._etat == "victoire":
+           return True
+       return False
+
+
+    @property
+    def niveau_final_oxygene(self):
+        return self._joueur.oxygene.niveau
 
     def _payer(self, cout):
         self._joueur.retirer_oxygene(cout)
@@ -393,13 +420,14 @@ class GameManager:
     def deplacer(self, autre_salle):
         destination = self._salles.get(autre_salle)
         passage = self.joueur._salle_actuelle.passage_vers(destination)
+       
         if destination is None:
             return "Cette salle n'existe pas."
         if passage is None:
             return f"Passage entre {self._joueur.salle_actuelle.nom} vers {destination.nom} n'existe pas"
         if not passage.est_ouvert():
             return f"Passage entre {self._joueur.salle_actuelle.nom} vers {destination.nom} fermé"
-        if not self._payer(self._couts["deplacer"]):
+        if not self._payer(self._couts["déplacer"]):
             return "tu est mort"
         self.joueur.changer_salle(destination)
         return f"Tu es maintenant dans {destination.nom}"
@@ -411,28 +439,31 @@ class GameManager:
 
     def lire_journal(self):
         salle = self._joueur.salle_actuelle
-        if salle.nom == "Laboratoire":
-            self._payer(self._couts["lire journal"])
-            return self.labo.lire_journal()
-        return "Pas possible"
+        if salle.nom != "Laboratoire":
+            return "Pas possible"
+        self._payer(self._couts["lire journal"])
+        return self.labo.lire_journal()
+        
         
 
     def ramasser(self, nom_objet):
-        self._joueur.trouver_objet(nom_objet)
-        if not nom_objet:
+        objet = self._joueur.salle_actuelle.trouver_objet(nom_objet)
+        if objet is None:
             return f"Objet absent : {nom_objet}"
+        if objet in self._joueur._inventaire:
+            return f"Objet déjà présent dans l'inventaire"
         if not self._payer(self._couts["ramasser"]):
             return"Plus d'oxygene"
-        self._payer(self._couts["ramasser"])
-        self._joueur.salle_actuelle.retirer_objet(nom_objet)
-        self._joueur._inventaire.append(nom_objet)
+        self._joueur.salle_actuelle.retirer_objet(objet)
+        self._joueur._inventaire.append(objet)
+        return f"Tu a ramasser {objet.nom}"
 
 
 
     def tenter_code(self, saisie):
         salle = self._joueur.salle_actuelle
         if salle.nom != "Machines":
-            return "Impossible"
+            return "Impossible, action possible seulement dans Machines"
         if not salle.cable_installe or not salle.fusible_installe:
             return "Objet manquant"
         if not self._payer(self._couts["tenter code"]):
@@ -443,12 +474,16 @@ class GameManager:
         return "Code faux"
 
     def evacuer(self):
+        machine = self._salles["Machines"]
         salle = self._joueur.salle_actuelle
         if salle.nom != "Commande":
             return "Action possible seulement dans Commandes"
-        if salle.reacteur_actif:
-            self._payer(self._couts["evacuer"])
-            self._etat = "victoire"
+        if not machine.reacteur_actif:
+            return "Le réacteur n'est pas actif, aucun oxygene ne sera débité"
+        if not self._payer(self._couts["évacuer"]):
+            return "Vous êtes morts" 
+        self._etat = "victoire"
+        return "Vous êtes sortie"
 
 
     def utiliser(self, nom_objet):
@@ -475,18 +510,22 @@ class GameManager:
 
 
     def attendre(self):
-        return self._payer(self._couts["attendre"])
+        self._payer(self._couts["attendre"])
+        return "Tu attend, rien ne se passe"
 
     def aide(self):
-        return "Aide : Le but de cet escape game est de s'enfuire de la base, faite attention a vos action car une fois l'oxygene a 0 c'est perdu"
+        return "Aide : Le but de cet escape game est de s'enfuire de la base, faite attention a vos action car une fois l'oxygene a 0 c'est perdu.\nVoici une cartes des chemins:\nSas -> Réserve et Sas -> Laboratoire\nLaboratoire -> Machines : a condition d'avoir le badge\nMachine -> Commande : a condition d'avoir le cable, le fusible et le code" \
+        
+       
 
     def etat(self):
-        return f"Voici votre état : Salle: {self._joueur.salle_actuelle} | Oxygène :{self._joueur.oxygene}"
+        return f"Voici votre état : Salle: {self._joueur.salle_actuelle.nom} | Oxygène :{self._joueur.oxygene.niveau}"
 
     def voir_inventaire(self):
-        return f"Votre inventaire: {self._joueur.inventaire}"
+      return self._joueur.voir_inventaire()
 
 
+    
     def est_terminee(self):
         if self._etat != "en cours":
             return True 

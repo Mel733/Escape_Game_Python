@@ -8,38 +8,54 @@ from orion import GameManager
 
 def main():
     game_manager = GameManager()
-    print("MISSION ORION-7 : Vous êtes coincé au sein de l'Orion 7\nVotre but : Sortir d'ici vivant ")
-    while game_manager.est_terminee():
-        print("Bienvenue cher joueur\nVoici tes actions :\n1.Te déplacer (6)\n2.Observer la salle(1)\n3.Lire le journal(1)\n4.Ramasser un objet(2)\n5.Utiliser un objet(2)\n6.Tenter un code(3)\n7.Evacuer(3)\n8.Attendre(5)\n9.Aide\n10.Etat\n11.Inventaire")
+    print("MISSION ORION-7 : Vous êtes coincé au sein de l'Orion 7\nVotre but : Sortir d'ici vivant\nVous apparaissez dans le Sas")
+    print()
+    while not game_manager.est_terminee():
+        print("Voici tes actions :\n1.Te déplacer (-6 d'oxygène)\n2.Observer la salle (-1 d'oxygene)\n3.Lire le journal (-1 d'oxygène)\n4.Ramasser un objet (-2 d'oxygène)\n5.Utiliser un objet (-2 d'oxygène)\n6.Tenter un code (-3 d'oxygène)\n7.Evacuer (-3 d'oxygène)\n8.Attendre (-5 d'oxygène)\n9.Aide\n10.Etat\n11.Inventaire")
+        print()
         try :
             choix = int(input("Que veux tu faire ? "))
+            print()
             if choix <=0 or choix > 11:
-                return "Choix inconnu"
+                print("Choix inconnu")
             elif choix == 1 :
-                game_manager.deplacer()
+                lieux = input("Ou veut tu de déplacer ? ")
+                lieux_clean = lieux.strip().capitalize()
+                print(game_manager.deplacer(lieux_clean))
             elif choix == 2:
-                game_manager.observer()
+                print(game_manager.observer())
             elif choix == 3:
-                game_manager.lire_journal()
+                print(game_manager.lire_journal())
             elif choix == 4:
-                game_manager.ramasser()
+                ramasse_objet =input("Quelle objet veut tu ramasser ? ")
+                ramasse_objet_clean = ramasse_objet.strip().capitalize()
+                print(game_manager.ramasser(ramasse_objet_clean))
             elif choix == 5:
-                game_manager.utiliser()
+                use_objet = input("Quelle objet veux tu utiliser ? ")
+                use_objet_clean = use_objet.strip().capitalize()
+                print(game_manager.utiliser(use_objet_clean))
             elif choix == 6 :
                 numero = input("Quelle code ? ")
-                game_manager.tenter_code(numero)
+                print(game_manager.tenter_code(numero))
             elif choix == 7:
-                game_manager.evacuer()
+                print(game_manager.evacuer())
             elif choix == 8:
-                game_manager.attendre()
+                print(game_manager.attendre())
             elif choix == 9:
-                game_manager.aide()
+                print(game_manager.aide())
             elif choix== 10:
-                game_manager.etat()
+                print(game_manager.etat())
             elif choix == 11 :
-                game_manager.voir_inventaire()
-        except ValueError:
-            print("Choix invalide, veuillez rentrer un nombre")
+                print(game_manager.voir_inventaire())
+        except ValueError as erreur:
+            print(erreur)
+
+    if game_manager.a_gagner:
+        print (f"Félicitation vous avez reussi a sortir avec {game_manager.niveau_final_oxygene1} % d'oxygene")
+    else:
+        print("Vous êtes mort vous avez échoué")
+
+
 
 
 
