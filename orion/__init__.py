@@ -23,7 +23,7 @@ class Oxygene:  # gère le niveau d'oxygène du joueur
         self._niveau = max (0, self._niveau - cout)  # on retire le coût, jamais sous 0
 
     def recharger(self, quantite):  
-        self._niveau = min (self._maximum, self._niveau + quantite)  
+        self._niveau = min (self._maximum, self._niveau + quantite) #ajoute de l'oxygène sans jamais dépasser 80
 
 
 
@@ -173,7 +173,7 @@ class Salle:
         return f"Bienvenue dans {self.nom}, ici il y a {liste_objet}"
 
     def ajouter_passage(self, passage):
-        self.passages.append(passage)  # mieux : self._passages
+        self._passages.append(passage) 
 
     def passage_vers(self,salle):  # trouve le passage qui mène à une salle
         for passage in self._passages:
@@ -241,7 +241,7 @@ class Joueur:
         return self._oxygene
 
     @property
-    def inventaire(self):  # attention : donne la vraie liste
+    def inventaire(self):
         return self._inventaire
 
     @property
@@ -427,7 +427,7 @@ class GameManager:  # pilote la partie
 
     def observer(self):
         self._payer(self._couts["observer"])  # coût 1
-        return self._joueur._salle_actuelle.decrire()  # mieux : self._joueur.salle_actuelle
+        return self._joueur.salle_actuelle.decrire()  
 
     def lire_journal(self):
         salle = self._joueur.salle_actuelle
@@ -442,12 +442,12 @@ class GameManager:  # pilote la partie
         objet = self._joueur.salle_actuelle.trouver_objet(nom_objet)  # on cherche dans la salle
         if objet is None:  # objet absent : coût 0
             return f"Objet absent : {nom_objet}"
-        if objet in self._joueur._inventaire:  # inutile : l'objet vient de la salle
+        if objet in self._joueur._inventaire: 
             return f"Objet déjà présent dans l'inventaire"
         if not self._payer(self._couts["ramasser"]):  # coût 2
             return"Plus d'oxygene"
         self._joueur.salle_actuelle.retirer_objet(objet)  # il sort de la salle
-        self._joueur._inventaire.append(objet)  # mieux : self._joueur.ajouter_objet(objet)
+        self._joueur.ajouter_objet(objet) 
         return f"Tu a ramasser {objet.nom}"
 
 
