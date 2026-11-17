@@ -517,7 +517,7 @@ class GameManager:  # pilote la partie
     def est_terminee(self):  # utilisée par main.py pour arrêter la boucle
         if self._etat != "en cours":
             return True 
-        # sinon il ne renvoie rien (mieux : return False)
+        return False
         
 
     
