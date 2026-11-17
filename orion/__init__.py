@@ -479,27 +479,23 @@ class GameManager:  # pilote la partie
 
     def utiliser(self, nom_objet):
         if self.est_terminee():  # partie finie
-            return "Plus d'oxygene"
+            return "Plus d'oxygène"
 
         objet = self._joueur.trouver_objet(nom_objet)  # on cherche dans l'inventaire
         if objet is None :  # il n'a pas l'objet : coût 0
-            return "Refusé, aucun oxygene a été débité"
+            return "Refusé, aucun oxygène n'a été débité"
 
         salle = self._joueur.salle_actuelle
-        if not self._payer(self._couts["utiliser"]):  # coût 2, payé avant de savoir si ça marche
-            return "Tu a perdu, plus d'oxygene"
-
         resultat = objet.utiliser(self._joueur, salle)  # polymorphisme : chaque objet fait son effet
-        if resultat is True:
-            return f"Tu a utilisé : {objet.nom}"
-        return f"Impossible d'utiliser : {objet.nom}"
 
+        if resultat is not True: #si le résultat est différent de True
+            return f"Impossible d'utiliser : {objet.nom}, rien n'a été débité" #on ne débite rien
+
+        if not self._payer(self._couts["utiliser"]): #on débite 2 et _payer vérifie si le joueur est mort
+            return "Tu n'as plus d'oxygène" #mort du joueur
+        return f"Tu as utilisé : {objet.nom}" #réussite
         
-
-
-
-
-
+       
     def attendre(self):
         self._payer(self._couts["attendre"])  # coût 5, rien d'autre
         return "Tu attend, rien ne se passe"

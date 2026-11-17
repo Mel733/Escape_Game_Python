@@ -107,8 +107,7 @@ Chaque scénario du cahier des charges est testé en jouant. Ce tableau donne le
 | 10 | Bombonne à usage unique | L'utiliser deux fois | Une seule recharge de 30, niveau jamais au-dessus de 80 |
 | 11 | Oxygène jamais négatif | Attendre jusqu'à 0 | Défaite, la partie s'arrête, aucune action possible |
 | 12 | Évacuation depuis la commande | Évacuer avec le réacteur actif et de l'oxygène | Victoire |
-| 13 | Commande invalide ou action impossible | Choix inconnu dans le menu, aller dans une salle sans passage, ramasser un objet absent, tenter un code hors des machines, évacuer hors de la commande | Aucun changement, 0 oxygène dépensé |
-| 13 (partiel) | Utilisation impossible d'un objet | Utiliser le badge hors du laboratoire | Refus, mais 2 d'oxygène sont dépensés : non conforme (voir Limites connues) |
+| 13 | Commande invalide ou action impossible | Choix inconnu dans le menu, aller dans une salle sans passage, ramasser un objet absent, tenter un code hors des machines, évacuer hors de la commande, utiliser un objet hors de sa salle | Aucun changement, 0 oxygène dépensé |
 | 14 | Consultations gratuites | Aide, état, inventaire, puis lire le journal | 0 oxygène pour les consultations, 1 pour le journal |
 | 15 | Victoire et défaite reproductibles | Les deux procédures ci-dessus | Victoire et défaite obtenues |
 

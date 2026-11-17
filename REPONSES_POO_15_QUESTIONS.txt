@@ -91,8 +91,9 @@ Elles redéfinissent les méthodes de leur classe mère comme utiliser() pour le
 
 QUESTION 12 - Que se passe-t-il, classe par classe, lorsqu'un joueur utilise
 le badge pour ouvrir la porte de maintenance ? Décrivez les interactions.
-RÉPONSE : Le joueur tape «  badge » dans utiliser un objet dans  main.py, et le GameManager.utiliser() vérifie que le joueur a le badge,
-puis fait payer 2 d'oxygène avec _payer(). Ensuite Badge.utiliser() trouve le passage vers les machines, et Passage.essayer_deverouiller() demande à EnigmeObjet.verifier() si le joueur possède le badge, puis deverouiller() et ouvre la porte.
+RÉPONSE : Le joueur tape « utiliser badge » dans main.py. Le GameManager.utiliser() vérifie que le joueur a le badge dans son inventaire. S'il ne l'a pas, rien n'est débité.
+Ensuite, GameManager appelle Badge.utiliser(). Le badge cherche le passage vers les machines. Passage.essayer_deverouiller() demande à EnigmeObjet.verifier() si le joueur possède le badge. Si oui, Passage.deverouiller() ouvre la porte.
+Si l'action a marché, GameManager fait payer 2 d'oxygène avec _payer(). Si l'action échoue (par exemple, le joueur est hors du laboratoire), rien n'est débité. Si le joueur n'a plus d'oxygène après le paiement, la partie est perdue.
 
 QUESTION 13 - Que se passe-t-il, classe par classe, lorsque le joueur tente
 de redémarrer le réacteur ? Précisez les vérifications et leurs responsables.
