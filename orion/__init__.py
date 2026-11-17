@@ -411,7 +411,7 @@ class GameManager:  # pilote la partie
         
     def deplacer(self, autre_salle):
         destination = self._salles.get(autre_salle)  # .get renvoie None si le nom n'existe pas
-        passage = self.joueur._salle_actuelle.passage_vers(destination)  # mieux : self._joueur.salle_actuelle
+        passage = self.joueur.salle_actuelle.passage_vers(destination) 
        
         if destination is None:  # la salle n'existe pas
             return "Cette salle n'existe pas."
